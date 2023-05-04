@@ -11,10 +11,6 @@ on:
         description: 'Image name suffix (e.g. the s3c part of tools-s3c)'
         required: true
         type: string
-      image_version:
-        description: 'Image version (e.g. v0.0.1)'
-        required: true
-        type: string
     outputs:
       digest:
         value: ${{ jobs.build.outputs.digest }}
@@ -34,6 +30,11 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3.5.2
 
+    - name: Set Variables
+      run: |
+        echo "RELEASE_VERSION=$(cat .version)" >> $GITHUB_ENV
+        echo "IMAGE_URI=ghcr.io/${{ github.repository }}-${{ inputs.image_suffix }}" >> $GITHUB_ENV
+
     - name: Auth Docker
       uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a  # v2.1.0
       with:
@@ -45,9 +46,9 @@ jobs:
       id: meta
       uses: docker/metadata-action@c4ee3adeed93b1fa6a762f209fb01608c1a22f1e  # v4.4.0
       with:
-        images: ghcr.io/${{ github.repository }}-${{ inputs.image_suffix }}
+        images: ${{ env.IMAGE_URI }}
         tags: |
-          type=raw,enable=true,value=${{ inputs.image_version }}
+          type=raw,enable=true,value=${{ env.RELEASE_VERSION }}
           type=raw,enable=true,value=latest
 
     - name: BuildPush Image
@@ -63,4 +64,4 @@ jobs:
     - name: Output Digest
       id: image
       run: |
-        echo "digest=${{ env.IMG_URI }}@${{ steps.build.outputs.digest }}" >> "$GITHUB_OUTPUT"
+        echo "digest=${{ env.IMAGE_URI }}@${{ steps.build.outputs.digest }}" >> "$GITHUB_OUTPUT"
