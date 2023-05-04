@@ -1,12 +1,8 @@
-name: on_push
-
+name: release
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    tags:
+    - 'v[0-9]+.[0-9]+.[0-9]+'  # Only build tag with semantic versioning format
 
 permissions:
   contents: read
@@ -23,18 +19,18 @@ jobs:
     permissions:
       contents: read
     outputs:
-      image_name: ${{ steps.conf.outputs.image_name }}
+      image_version: ${{ steps.conf.outputs.image_version }}
       cosign_version: ${{ steps.conf.outputs.cosign_version }}
       err_on_vulnerability_sev: ${{ steps.conf.outputs.err_on_vulnerability_sev }}
     steps:
     - name: Export Config
       id: conf
       run: |
-        echo "image_name=${{ env.IMG_NAME }}" >> $GITHUB_OUTPUT
+        echo "image_version=$(cat .version)" >> $GITHUB_OUTPUT
         echo "cosign_version=${{ env.COSIGN_VERSION }}" >> $GITHUB_OUTPUT
         echo "err_on_vulnerability_sev=${{ env.ERR_VULNERABILITY_SEV }}" >> $GITHUB_OUTPUT
 
-  build-s3c-tools:
+  build-s3c:
     needs:
     - conf
     permissions:
@@ -44,12 +40,12 @@ jobs:
     with:
       dockerfile_path: s3c/Dockerfile
       image_suffix: s3c
-      image_version: "$(cat s3c/.version)"
+      image_version: ${{ needs.conf.outputs.image_version }}
 
   sign:
     needs:
     - conf
-    - build-s3c-tools
+    - build-s3c
     permissions:
       contents: read
       actions: read
@@ -62,7 +58,7 @@ jobs:
   scan:
     needs:
     - conf
-    - build-s3c-tools
+    - build-s3c
     permissions:
       contents: read
       actions: read
@@ -74,7 +70,7 @@ jobs:
   slsa:
     needs:
     - conf
-    - build-s3c-tools
+    - build-s3c
     permissions:
       contents: read
       actions: read
