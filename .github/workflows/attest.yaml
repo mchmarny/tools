@@ -1,0 +1,44 @@
+name: attest
+
+on:
+  workflow_call:
+    inputs:
+      image_digest:
+        description: 'Fully-qualified image digest to verify (registry/image@sha256:digest)'
+        required: true
+        type: string
+    outputs:
+      digest:
+        value: ${{ jobs.build.outputs.digest }}
+
+permissions:
+  contents: read
+
+jobs:
+
+  sign:
+    permissions:
+      contents: read
+      actions: read
+      packages: write
+    uses: ./.github/workflows/sign.yaml
+    with:
+      image_digest: ${{ inputs.image_digest }}
+
+  scan:
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/scan.yaml
+    with:
+      image_digest: ${{ inputs.image_digest }}
+
+  slsa:
+    permissions:
+      contents: read
+      actions: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/slsa.yaml
+    with:
+      image_digest: ${{ inputs.image_digest }}
