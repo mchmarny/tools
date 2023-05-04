@@ -1,0 +1,26 @@
+name: sbom
+
+on:
+  workflow_call:
+    inputs:
+      image_digest:
+        description: 'Fully-qualified image digest to verify (registry/image@sha256:digest)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      packages: write
+    steps:
+
+    - uses: anchore/sbom-action@422cb34a0f8b599678c41b21163ea6088edb2624  # v0.14.1
+      with:
+        image: ${{ inputs.image_digest }}
+        registry-username: ${{ github.actor }}
+        registry-password: ${{ secrets.GITHUB_TOKEN }}

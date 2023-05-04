@@ -25,6 +25,15 @@ jobs:
     with:
       image_digest: ${{ inputs.image_digest }}
 
+  sbom:
+    permissions:
+      contents: read
+      actions: read
+      packages: write
+    uses: ./.github/workflows/sbom.yaml
+    with:
+      image_digest: ${{ inputs.image_digest }}
+
   scan:
     permissions:
       contents: read
