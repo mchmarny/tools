@@ -1,0 +1,38 @@
+# Mac 
+.DS_Store
+
+# Test binaries
+*.test
+tmp
+/*.json
+*.tmp
+
+# Coverage
+*.out
+
+# Binaries
+bin
+dist
+
+# Keys 
+cosign.*
+*.pem
+
+# IDEs
+.idea/*
+.vscode/*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# DB
+*.db
+test.md
+
+# Terraform
+*.tfstate
+*.tfvars
+*.hcl
+.terraform
+*.backup
