@@ -7,11 +7,6 @@ on:
         description: 'Fully-qualified image digest to verify (registry/image@sha256:digest)'
         required: true
         type: string
-      cosign_version:
-        description: 'The version of cosign to use'
-        required: false
-        type: string
-        default: 'v2.0.1'
 
 permissions:
   contents: read
@@ -57,25 +52,6 @@ jobs:
 
     - name: Checkout Code
       uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3.5.2
-
-    - name: Install Cosign
-      uses: sigstore/cosign-installer@204a51a57a74d190b284a0ce69b44bc37201f343  # v3.0.3
-      with:
-        cosign-release: ${{ inputs.cosign_version }}
-
-    - name: Auth Cosign
-      run: |
-        cosign login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-
-    # SLSA provenance verification using cosign and CUE policy.
-    - name: Verify SLSA Provenance (cosign)
-      run: |
-        cosign verify-attestation \
-          --type slsaprovenance \
-          --certificate-identity-regexp "^https://github.com/slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@refs/tags/v[0-9]+.[0-9]+.[0-9]+$" \
-          --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-          --policy policy/provenance.cue \
-          ${{ inputs.image_digest }}
 
     - uses: slsa-framework/slsa-verifier/actions/installer@623cf20a23f3360549eafac6efe1a158960f15f9  # v2.2.0
 
