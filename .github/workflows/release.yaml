@@ -26,6 +26,7 @@ jobs:
       contents: read
       actions: read
       packages: write
+      id-token: write
     uses: ./.github/workflows/attest.yaml
     with:
       image_digest: ${{ needs.build_s3c.outputs.digest }}
